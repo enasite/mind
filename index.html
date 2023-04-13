@@ -1,27 +1,31 @@
-<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>DHTMLX Grid Example</title>
-    <link rel="stylesheet" type="text/css" href="https://cdn.dhtmlx.com/edge/dhtmlx.css" />
-    <script src="https://cdn.dhtmlx.com/edge/dhtmlx.js"></script>
-  </head>
-  <body>
-    <div id="grid"></div>
-    <script>
-      // Create a new grid object with the container element and some options
-      const grid = new dhx.Grid("grid", {
-        columns: [
-          { id: "id", header: "ID", width: 50 },
-          { id: "name", header: "Name", width: 200 },
-          { id: "age", header: "Age", width: 50 },
-        ],
-        data: [
-          { id: 1, name: "John Doe", age: 30 },
-          { id: 2, name: "Jane Doe", age: 25 },
-          { id: 3, name: "Bob Smith", age: 40 },
-        ],
-      });
-    </script>
-  </body>
+    <head>
+        <link
+            type="text/css"
+            rel="stylesheet"
+            href="https://unpkg.com/jsmind@0.5/style/jsmind.css"
+        />
+        <script type="text/javascript" src="https://unpkg.com/jsmind@0.5/es6/jsmind.js"></script>
+        <!--
+            enable draggable node feature
+            <script type="text/javascript" src="https://unpkg.com/jsmind@0.5/es6/jsmind.draggable-node.js"></script>
+        -->
+    </head>
+    <body>
+        <div id="jsmind_container"></div>
+
+        <script type="text/javascript">
+            var mind = {
+                // 3 data formats were supported ...
+                // see documents for more information
+            };
+            var options = {
+                container: 'jsmind_container',
+                theme: 'orange',
+                editable: true,
+            };
+            var jm = new jsMind(options);
+            jm.show(mind);
+        </script>
+    </body>
 </html>
