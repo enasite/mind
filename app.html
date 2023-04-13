@@ -16,9 +16,60 @@
        
             enable draggable node feature
             <script type="text/javascript" src="https://unpkg.com/jsmind@0.5/es6/jsmind.draggable-node.js"></script>
-      
+      <link
+    rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css"
+    integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl7/1fF5/xDns+grk2XmRUrqIs4o6mijaAJ4tp4D4H"
+    crossorigin="anonymous"
+/>
+
+<style>
+    .jmnode {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
     </head>
     <body>
+        <div
+    class="modal fade"
+    id="editNodeModal"
+    tabindex="-1"
+    aria-labelledby="editNodeModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editNodeModalLabel">Edit Node Content</h5>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <textarea class="form-control" id="editNodeTextArea"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Close
+                </button>
+                <button type="button" class="btn btn-primary" id="saveNodeChanges">
+                    Save changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
         <div style="display: none">
                 <input class="file" type="file" id="image-chooser" accept="image/*">
             </div>
@@ -28,8 +79,8 @@
         <script type="text/javascript">
            
             var _jm = null;
-       
-                function open_empty() {
+       var selectedNodeId = null;
+              function open_empty() {
     var options = {
         container: 'jsmind_container',
         theme: 'greensea',
@@ -55,6 +106,53 @@
         addNodeIcon.style.marginLeft = '5px';
         e.appendChild(addNodeIcon);
     });
+                  
+                  
+                  
+                  
+                  _jm.view.add_event_listener(jsMind.event_type.dblclick, function(e) {
+        if (e.target.tagName === 'JMNODE') {
+            selectedNodeId = e.target.parentNode.id.slice(5);
+            var node = _jm.get_node(selectedNodeId);
+                        document.getElementById('editNodeTextArea').value = node.data.topic;
+            var editNodeModal = new bootstrap.Modal(
+                document.getElementById('editNodeModal')
+            );
+            editNodeModal.show();
+        }
+    });
+
+    // Load from localStorage
+    var savedMindMap = localStorage.getItem('savedMindMap');
+    if (savedMindMap) {
+        _jm.load(JSON.parse(savedMindMap));
+    } else {
+        _jm.add_node(null, 'root', 'Root');
+    }
+}
+
+document.getElementById('saveNodeChanges').addEventListener('click', function() {
+    if (selectedNodeId) {
+        var newText = document.getElementById('editNodeTextArea').value;
+        _jm.update_node(selectedNodeId, newText);
+        selectedNodeId = null;
+
+        // Save to localStorage
+        localStorage.setItem('savedMindMap', JSON.stringify(_jm.get_data()));
+    }
+    var editNodeModalInstance = bootstrap.Modal.getInstance(
+        document.getElementById('editNodeModal')
+    );
+    editNodeModalInstance.hide();
+});
+
+// Save to localStorage when a new node is added or removed
+_jm.add_event_listener(function(type, data) {
+    if (type === jsMind.event_type.edit) {
+        localStorage.setItem('savedMindMap', JSON.stringify(_jm.get_data()));
+    }
+});
+
 }
 
          
