@@ -159,6 +159,12 @@
             var _jm = null;
             function open_empty() {
                 var options = {
+                     editable: true,
+  template: '<div class="add-node"><i class="fa fa-plus"></i></div>',
+  addNodeOnClick: function(nodeId, e) {
+    var node = jsMind.get_node(nodeId);
+    jsMind.add_node(node, "New Node", "bottom");
+  },
                     container: 'jsmind_container',
                     theme: 'greensea',
                     editable: true,
