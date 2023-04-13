@@ -15,16 +15,29 @@
         <div id="jsmind_container"></div>
 
         <script type="text/javascript">
-            var mind = {
-                // 3 data formats were supported ...
-                // see documents for more information
-            };
-            var options = {
-                container: 'jsmind_container',
-                theme: 'orange',
-                editable: true,
-                name:'ena'
-            };
+           // Define the mind map data
+const mind = {
+  meta: {
+    name: 'example',
+    author: 'John Doe',
+    version: '0.2',
+  },
+  format: 'node_array',
+  data: [
+    { id: 'root', isroot: true, topic: 'Root Node' },
+    { id: 'sub1', parentid: 'root', topic: 'Sub Node 1' },
+    { id: 'sub2', parentid: 'root', topic: 'Sub Node 2' },
+  ],
+};
+
+// Create the mind map
+const options = {
+  container: 'jsmind_container',
+  theme: 'primary',
+  editable: true,
+};
+
+
             var jm = new jsMind(options);
             jm.show(mind);
         </script>
