@@ -5,6 +5,13 @@
             rel="stylesheet"
             href="https://unpkg.com/jsmind@0.5/style/jsmind.css"
         />
+        <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
+    integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl7/1fF5/xDns+grk2XmRUrqIs4o6mijaAJ4tp4D4H"
+    crossorigin="anonymous"
+/>
+
         <script type="text/javascript" src="https://unpkg.com/jsmind@0.5/es6/jsmind.js"></script>
        
             enable draggable node feature
@@ -21,61 +28,36 @@
         <script type="text/javascript">
            
             var _jm = null;
-            function open_empty() {
-                var options = {
-                     editable: true,
-  template: '<div class="add-node"><i class="fa fa-plus"></i></div>',
-  addNodeOnClick: function(nodeId, e) {
-    var node = jsMind.get_node(nodeId);
-    jsMind.add_node(node, "New Node", "bottom");
-  },
-                    container: 'jsmind_container',
-                    theme: 'greensea',
-                    width: '100%',
-                    height: '100%',
-                    draggable: true,
-                    editable:true,
-    mode:'full',
-    show_handle:true, // set to true to display plus sign
-    show_toolbar:true, // set to true to display toolbar
-    show_statusbar:true, // set to true to display statusbar,
-    show_navigator:true, // set to true to display navigator,
-    show_contextmenu:true, // set to true to display contextmenu,
-    show_tooltip:true, // set to true to display tooltip,
-    show_search:true, // set to true to display search,
-    show_zoom:true, // set to true to display zoom,
-    show_fullscreen:true, // set to true to display fullscreen,
-    show_download:true, // set to true to display download,
-    show_print:true, // set to true to display print,
-    show_save:true, // set to true to display save,
-    show_undo:true, // set to true to display undo,
-    show_redo:true, // set to true to display redo,
-    show_fullscreen:true, // set to true to display fullscreen,
-                    
-                    
-                    
-                    onNodeClick: function(nodeId, e) {
-                        
-                    },
-                 
-                    view: {
-                        draggable: true,
-                    },
-                };
-                _jm = jsMind.show(options);
-                // _jm = jsMind.show(options,mind);
-            }
+       
+                function open_empty() {
+    var options = {
+        container: 'jsmind_container',
+        theme: 'greensea',
+        editable: true,
+        view: {
+            draggable: true,
+        },
+    };
+    _jm = jsMind.show(options);
 
-           
-            
+    _jm.add_node(null, 'root', 'Root');
 
-          
+    _jm.view.add_event_listener(jsMind.event_type.click, function(e) {
+        if (e.target.tagName === 'I' && e.target.classList.contains('fa-plus')) {
+            var nodeId = e.target.parentNode.parentNode.id.slice(5);
+            _jm.add_node(nodeId, jsMind.util.uuid.newid(), 'New Node');
+        }
+    });
 
-            
+    _jm.view.add_after_renderer(function(h, n, e) {
+        var addNodeIcon = document.createElement('i');
+        addNodeIcon.classList.add('fa', 'fa-plus');
+        addNodeIcon.style.marginLeft = '5px';
+        e.appendChild(addNodeIcon);
+    });
+}
 
-            function prompt_info(msg) {
-                alert(msg);
-            }
+         
 
             open_empty();
         
