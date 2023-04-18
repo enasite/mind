@@ -1,0 +1,143 @@
+<html>
+
+<head>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/jsmind@0.5/style/jsmind.css" />
+    <script type="text/javascript" src="https://unpkg.com/jsmind@0.5/es6/jsmind.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/jsmind@0.5/es6/jsmind.draggable-node.js"></script>
+</head>
+
+<body>
+
+    <button onclick="add_node();">add a node</button>
+    <button onclick="show_data();">show_data</button>
+    <button onclick="show_selected();">show_selected</button>
+    <button onclick="modify_node();">modify_node</button>
+    <button onclick="remove_node();">remove_node</button>
+    <button onclick="get_nodearray_data();">get_nodearray_data</button>
+    <button onclick="get_freemind_data();">get_freemind_data</button>
+
+
+    <div id="jsmind_container"></div>
+    <script>
+        //set some defaults so it can be overridden in js.js file
+        var mind ;
+    </script>
+    <script src="js.js"></script>
+    <script type="text/javascript">
+        var _jm = null;
+        function open_empty() {
+            var options = {
+               
+                template: '<div class="add-node"><i class="fa fa-plus"></i></div>',
+                addNodeOnClick: function (nodeId, e) {
+                    var node = jsMind.get_node(nodeId); jsMind.add_node(node, "New Node", "bottom");
+                },
+                container: "jsmind_container",
+                theme: "greensea",
+                editable: true,
+              
+                mode :'full', 			// display mode
+   support_html : true, 	// Does it support HTML elements in the node?
+   view:{
+       engine: 'canvas', 	// engine for drawing lines between nodes in the mindmap
+       hmargin:100, 		// Minimum horizontal distance of the mindmap from the outer frame of the container
+       vmargin:50, 			// Minimum vertical distance of the mindmap from the outer frame of the container
+       line_width:2, 		// thickness of the mindmap line
+       line_color:'#555', 	// Thought mindmap line color
+       draggable: false,    // Drag the mind map with your mouse, when it's larger that the container
+       hide_scrollbars_when_draggable: false, // Hide container scrollbars, when mind map is larger than container and draggable option is true.
+       node_overflow: 'hidden' // Text overflow style in node
+   },
+   layout:{
+       hspace:30, 			// Horizontal spacing between nodes
+       vspace:20, 			// Vertical spacing between nodes
+       pspace:13,			// Horizontal spacing between node and connection line (to place node expander)
+       cousin_space:0			// Additional vertical spacing between child nodes of neighbor nodes
+   }, 
+   shortcut:{
+       enable:true, 		// whether to enable shortcut
+       handles:{}, 			// Named shortcut key event processor
+       mapping:{ 			// shortcut key mapping
+           addchild : [45, 4096+13], 	// <Insert>, <Ctrl> + <Enter>
+           addbrother : 13, // <Enter>
+           editnode : 113, 	// <F2>
+           delnode : 46, 	// <Delete>
+           toggle : 32, 	// <Space>
+           left : 37, 		// <Left>
+           up : 38, 		// <Up>
+           right : 39, 		// <Right>
+           down : 40, 		// <Down>
+       }
+   },
+};
+            
+            
+            
+            _jm =mind? jsMind.show(options,mind):jsMind.show(options);
+        }
+
+        function show_data() {
+            var mind_data = _jm.get_data(); var mind_string = jsMind.util.json.json2string(mind_data); prompt_info(mind_string);
+        }
+
+        function show_selected() {
+            var selected_node = _jm.get_selected_node(); if (!!selected_node) {
+                prompt_info(selected_node.topic);
+            } else {
+                prompt_info("nothing");
+            }
+        }
+        function get_selected_nodeid() {
+            var selected_node = _jm.get_selected_node(); if (!!selected_node) {
+                return selected_node.id;
+            } else {
+                return null;
+            }
+        }
+        function add_node() {
+            var selected_node = _jm.get_selected_node(); // as parent of new node
+            if (!selected_node) {
+                prompt_info("please select a node first."); return;
+            }
+            var nodeid = jsMind.util.uuid.newid();
+            var topic = "* Node_" + nodeid.substr(nodeid.length - 6) + " *"; var node = _jm.add_node(selected_node, nodeid, topic);
+        }
+
+        function modify_node() {
+            var selected_id = get_selected_nodeid(); if (!selected_id) {
+                prompt_info("please select a node first."); return;
+            }
+            // modify the topic
+            _jm.update_node(selected_id, "--- modified ---");
+        }
+        function prompt_info(msg) {
+            alert(msg);
+        }
+
+        function get_nodearray_data() {
+            var mind_data = _jm.get_data('node_array');
+            var mind_string = jsMind.util.json.json2string(mind_data);
+            prompt_info(mind_string);
+        }
+
+        function get_freemind_data() {
+            var mind_data = _jm.get_data('freemind');
+            var mind_string = jsMind.util.json.json2string(mind_data);
+            alert(mind_string);
+        }
+
+        function remove_node() {
+            var selected_id = get_selected_nodeid();
+            if (!selected_id) {
+                prompt_info('please select a node first.');
+                return;
+            }
+
+            _jm.remove_node(selected_id);
+        }
+        open_empty();
+
+    </script>
+</body>
+
+</html>

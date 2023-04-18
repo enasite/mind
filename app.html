@@ -1,164 +1,100 @@
 <html>
-    <head>
-        <link
-            type="text/css"
-            rel="stylesheet"
-            href="https://unpkg.com/jsmind@0.5/style/jsmind.css"
-        />
-        <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
-    integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl7/1fF5/xDns+grk2XmRUrqIs4o6mijaAJ4tp4D4H"
-    crossorigin="anonymous"
-/>
 
-        <script type="text/javascript" src="https://unpkg.com/jsmind@0.5/es6/jsmind.js"></script>
-       
-            enable draggable node feature
-            <script type="text/javascript" src="https://unpkg.com/jsmind@0.5/es6/jsmind.draggable-node.js"></script>
-      <link
-    rel="stylesheet"
-    href="https://maxcdn.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css"
-    integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl7/1fF5/xDns+grk2XmRUrqIs4o6mijaAJ4tp4D4H"
-    crossorigin="anonymous"
-/>
+<head>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/jsmind@0.5/style/jsmind.css" />
+    <script type="text/javascript" src="https://unpkg.com/jsmind@0.5/es6/jsmind.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/jsmind@0.5/es6/jsmind.draggable-node.js"></script>
+</head>
 
-<style>
-    .jmnode {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-</style>
+<body>
+    <div id="jsmind_container"></div>
+    <script>
+        //set some defaults so it can be overridden in js.js file
+        var mind;
+    </script>
+    <script src="js.js"></script>
+    <script type="text/javascript">
+        var _jm = null;
+        function open_empty() {
+            var options = {
 
-    </head>
-    <body>
-        <div
-    class="modal fade"
-    id="editNodeModal"
-    tabindex="-1"
-    aria-labelledby="editNodeModalLabel"
-    aria-hidden="true"
->
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editNodeModalLabel">Edit Node Content</h5>
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                ></button>
-            </div>
-            <div class="modal-body">
-                <textarea class="form-control" id="editNodeTextArea"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal"
-                >
-                    Close
-                </button>
-                <button type="button" class="btn btn-primary" id="saveNodeChanges">
-                    Save changes
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+                template: '<div class="add-node"><i class="fa fa-plus"></i></div>',
+                addNodeOnClick: function (nodeId, e) {
+                    var node = jsMind.get_node(nodeId); jsMind.add_node(node, "New Node", "bottom");
+                },
+                container: "jsmind_container",
+                theme: "greensea",
+                editable: true,
 
-        <div style="display: none">
-                <input class="file" type="file" id="image-chooser" accept="image/*">
-            </div>
-       
-        <div id="jsmind_container"></div>
+                mode: 'full', 			// display mode
+                support_html: true, 	// Does it support HTML elements in the node?
+                view: {
+                    engine: 'canvas', 	// engine for drawing lines between nodes in the mindmap
+                    hmargin: 100, 		// Minimum horizontal distance of the mindmap from the outer frame of the container
+                    vmargin: 50, 			// Minimum vertical distance of the mindmap from the outer frame of the container
+                    line_width: 2, 		// thickness of the mindmap line
+                    line_color: '#555', 	// Thought mindmap line color
+                    draggable: false,    // Drag the mind map with your mouse, when it's larger that the container
+                    hide_scrollbars_when_draggable: false, // Hide container scrollbars, when mind map is larger than container and draggable option is true.
+                    node_overflow: 'hidden' // Text overflow style in node
+                },
+                layout: {
+                    hspace: 30, 			// Horizontal spacing between nodes
+                    vspace: 20, 			// Vertical spacing between nodes
+                    pspace: 13,			// Horizontal spacing between node and connection line (to place node expander)
+                    cousin_space: 0			// Additional vertical spacing between child nodes of neighbor nodes
+                },
+                shortcut: {
+                    enable: true, 		// whether to enable shortcut
+                    handles: {}, 			// Named shortcut key event processor
+                    mapping: { 			// shortcut key mapping
+                        addchild: [45, 4096 + 13], 	// <Insert>, <Ctrl> + <Enter>
+                        addbrother: 13, // <Enter>
+                        editnode: 113, 	// <F2>
+                        delnode: 46, 	// <Delete>
+                        toggle: 32, 	// <Space>
+                        left: 37, 		// <Left>
+                        up: 38, 		// <Up>
+                        right: 39, 		// <Right>
+                        down: 40, 		// <Down>
+                    }
+                },
+            };
 
-        <script type="text/javascript">
-           
-            var _jm = null;
-       var selectedNodeId = null;
-              function open_empty() {
-    var options = {
-        container: 'jsmind_container',
-        theme: 'greensea',
-        editable: true,
-        view: {
-            draggable: true,
-        },
-    };
-    _jm = jsMind.show(options);
 
-    _jm.add_node(null, 'root', 'Root');
 
-    _jm.view.add_event_listener(jsMind.event_type.click, function(e) {
-        if (e.target.tagName === 'I' && e.target.classList.contains('fa-plus')) {
-            var nodeId = e.target.parentNode.parentNode.id.slice(5);
-            _jm.add_node(nodeId, jsMind.util.uuid.newid(), 'New Node');
+            _jm = mind ? jsMind.show(options, mind) : jsMind.show(options);
         }
-    });
 
-    _jm.view.add_after_renderer(function(h, n, e) {
-        var addNodeIcon = document.createElement('i');
-        addNodeIcon.classList.add('fa', 'fa-plus');
-        addNodeIcon.style.marginLeft = '5px';
-        e.appendChild(addNodeIcon);
-    });
-                  
-                  
-                  
-                  
-                  _jm.view.add_event_listener(jsMind.event_type.dblclick, function(e) {
-        if (e.target.tagName === 'JMNODE') {
-            selectedNodeId = e.target.parentNode.id.slice(5);
-            var node = _jm.get_node(selectedNodeId);
-                        document.getElementById('editNodeTextArea').value = node.data.topic;
-            var editNodeModal = new bootstrap.Modal(
-                document.getElementById('editNodeModal')
-            );
-            editNodeModal.show();
+        function show_data() {
+            var mind_data = _jm.get_data(); var mind_string = jsMind.util.json.json2string(mind_data); prompt_info(mind_string);
         }
-    });
 
-    // Load from localStorage
-    var savedMindMap = localStorage.getItem('savedMindMap');
-    if (savedMindMap) {
-        _jm.load(JSON.parse(savedMindMap));
-    } else {
-        _jm.add_node(null, 'root', 'Root');
-    }
-}
+        function get_selected_nodeid() {
+            var selected_node = _jm.get_selected_node(); if (!!selected_node) {
+                return selected_node.id;
+            } else {
+                return null;
+            }
+        }
+        function add_node() {
+            var selected_node = _jm.get_selected_node(); // as parent of new node
+            if (!selected_node) {
+                prompt_info("please select a node first."); return;
+            }
+            var nodeid = jsMind.util.uuid.newid();
+            var topic = "* Node_" + nodeid.substr(nodeid.length - 6) + " *"; var node = _jm.add_node(selected_node, nodeid, topic);
+        }
 
-document.getElementById('saveNodeChanges').addEventListener('click', function() {
-    if (selectedNodeId) {
-        var newText = document.getElementById('editNodeTextArea').value;
-        _jm.update_node(selectedNodeId, newText);
-        selectedNodeId = null;
 
-        // Save to localStorage
-        localStorage.setItem('savedMindMap', JSON.stringify(_jm.get_data()));
-    }
-    var editNodeModalInstance = bootstrap.Modal.getInstance(
-        document.getElementById('editNodeModal')
-    );
-    editNodeModalInstance.hide();
-});
+        function prompt_info(msg) {
+            alert(msg);
+        }
 
-// Save to localStorage when a new node is added or removed
-_jm.add_event_listener(function(type, data) {
-    if (type === jsMind.event_type.edit) {
-        localStorage.setItem('savedMindMap', JSON.stringify(_jm.get_data()));
-    }
-});
 
-}
+        open_empty();
 
-         
+    </script>
+</body>
 
-            open_empty();
-        
-        </script>
-    </body>
 </html>
