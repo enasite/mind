@@ -46,7 +46,44 @@
                 },
                 shortcut: {
                     enable: true, 		// whether to enable shortcut
-                    handles: {}, 			// Named shortcut key event processor
+                    handles: {
+                        // Add other handles here
+                        'updateShape': function (jm, e) {
+                            var nodeid = get_selected_nodeid();
+        if (nodeid) {
+            var selectedNode = jm.get_node(nodeid);
+            var nodeElement = document.querySelector(`[nodeid="${nodeid}"]`);
+            var data = selectedNode.data || {};
+
+            var oldShape = data.shape || "rectangle";
+            var newShape = getNextShape(oldShape);
+            data.shape = newShape;
+
+            // Update the node's shape by modifying its CSS classes
+            nodeElement.classList.remove(oldShape);
+            nodeElement.classList.add(newShape);
+
+            jm.update_node(nodeid, selectedNode.topic, data);
+        }
+                        },
+
+                        'updateShapeAndColor': function (jm, e) {
+                            var nodeid = get_selected_nodeid();
+                            if (nodeid) {
+                                var selectedNode = jm.get_node(nodeid);
+                                var nodeElement = document.querySelector(`[nodeid="${nodeid}"]`);
+                                var data = selectedNode.data || {};
+
+                                data.shape = getNextShape(data.shape || "rectangle");
+                                data.backgroundColor = getNextBackgroundColor(data.backgroundColor || "green");
+
+                                // Update the node's background color using set_node_color()
+                                jm.set_node_color(nodeid, data.backgroundColor, null);
+
+                                jm.update_node(nodeid, selectedNode.topic, data);
+                            }
+                        }
+                    }, 			// Named shortcut key event processor
                     mapping: { 			// shortcut key mapping
                         addchild: [45, 4096 + 13], 	// <Insert>, <Ctrl> + <Enter>
                         addbrother: 13, // <Enter>
@@ -56,7 +93,9 @@
                         left: 37, 		// <Left>
                         up: 38, 		// <Up>
                         right: 39, 		// <Right>
-                        down: 40, 		// <Down>
+                        down: 40, 		// <Down>,
+                        updateShape: 4096 + 66, // <Ctrl> + <B>,
+                      //  updateShape: 16 + 4096 + 66, // <Shift> + <B>
                     }
                 },
             };
@@ -64,6 +103,88 @@
 
 
             _jm = mind ? jsMind.show(options, mind) : jsMind.show(options);
+
+            _jm.enable_edit({
+                max_undo_steps: 10
+            });
+
+            // _jm.view.container.addEventListener("mouseover", function (event) {
+            //     var target = event.target;
+            //     if (target.classList.contains("node")) {
+            //         target.classList.add("hover");
+            //         var nodeid = target.getAttribute("nodeid");
+            //         _jm.select_node(nodeid); // Select the node on mouse enter
+            //     }
+            // });
+
+            // _jm.view.container.addEventListener("mouseout", function (event) {
+            //     var target = event.target;
+            //     if (target.classList.contains("node")) {
+            //         target.classList.remove("hover");
+            //         _jm.unselect_node(); // Unselect the node on mouse leave
+            //     }
+            // });
+
+            function getNextShape(currentShape) {
+                const shapes = ["rectangle", "circle", "triangle", "diamond", "pentagon", "hexagon"];
+                const currentIndex = shapes.indexOf(currentShape);
+                return shapes[(currentIndex + 1) % shapes.length];
+            }
+
+            function getNextBackgroundColor(currentColor) {
+                const colors = ["green", "black", "red", "purple", "darkgoldenrod"];
+                const currentIndex = colors.indexOf(currentColor);
+                return colors[(currentIndex + 1) % colors.length];
+            }
+
+
+            function showPopup(node) {
+                var dueDate = window.prompt(`Node content: ${node.topic}\nDescription: ${node.data.description || ""}\nCurrent due date: ${node.data.dueDate || ""}\nEnter a new due date (YYYY-MM-DD):`, "");
+                if (dueDate) {
+                    var data = node.data || {};
+                    data.dueDate = dueDate;
+                    _jm.update_node(node.id, node.topic, data);
+                    updateDueDateCountdown();
+                }
+            }
+
+            _jm.view.container.addEventListener("dblclick", function (event) {
+                var target = event.target;
+                if (target.classList.contains("node")) {
+                    var nodeid = target.getAttribute("nodeid");
+                    var node = _jm.get_node(nodeid);
+                    showPopup(node);
+                }
+            });
+            function updateDueDateCountdown() {
+                var nodes = _jm.get_data().data;
+                for (var i = 0; i < nodes.children.length; i++) {
+                    traverseNode(nodes.children[i]);
+                }
+            }
+
+            function traverseNode(node) {
+                var data = node.data || {};
+                var dueDate = data.dueDate;
+                if (dueDate) {
+                    var countdown = Math.round((new Date(dueDate) - new Date()) / 1000);
+                    var countdownText = countdown > 0 ? `${countdown}h` : "Due";
+                    _jm.update_node(node.id, `${node.topic} (${countdownText})`, data);
+                }
+                if (node.children && node.children.length > 0) {
+                    for (var i = 0; i < node.children.length; i++) {
+                        traverseNode(node.children[i]);
+                    }
+                }
+            }
+
+            setTimeout(function () {
+
+                setInterval(updateDueDateCountdown, 1000); // Update every minute
+            }, 2000)
+
+
+
         }
 
         function show_data() {
@@ -85,6 +206,13 @@
             var nodeid = jsMind.util.uuid.newid();
             var topic = "* Node_" + nodeid.substr(nodeid.length - 6) + " *"; var node = _jm.add_node(selected_node, nodeid, topic);
         }
+        document.addEventListener("keydown", function (event) {
+            if (event.shiftKey && event.keyCode === 13) {
+                _jm.invoke_undo();
+            }
+        });
+
+
 
 
         function prompt_info(msg) {
@@ -92,7 +220,11 @@
         }
 
 
+
         open_empty();
+
+
+
 
     </script>
 </body>
